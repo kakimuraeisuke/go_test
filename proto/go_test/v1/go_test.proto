@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package go_test.v1;
+
+option go_package = "proto/go_test/v1;v1";
+
+import "google/protobuf/timestamp.proto";
+
+// Ping service for health check
+service GoTestService {
+  rpc Ping(PingRequest) returns (PingResponse);
+  rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
+  rpc GetNote(GetNoteRequest) returns (GetNoteResponse);
+}
+
+// Ping messages
+message PingRequest {}
+
+message PingResponse {
+  bool mysql_available = 1;
+  bool redis_available = 2;
+  string message = 3;
+}
+
+// Note messages
+message CreateNoteRequest {
+  string title = 1;
+  string content = 2;
+}
+
+message CreateNoteResponse {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message GetNoteRequest {
+  int64 id = 1;
+}
+
+message GetNoteResponse {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+}

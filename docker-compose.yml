@@ -1,0 +1,88 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: go_test_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: go_test
+      MYSQL_USER: user
+      MYSQL_PASSWORD: hogehoge
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/conf.d:/etc/mysql/conf.d
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  redis:
+    image: redis:latest
+    container_name: go_test_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+      interval: 5s
+      start_period: 10s
+
+  goapp:
+    build: .
+    container_name: go_test_app
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: go_test
+      MYSQL_USER: user
+      MYSQL_PASSWORD: hogehoge
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      GRPC_PORT: 50051
+    ports:
+      - "50051:50051"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "grpc-health-probe", "-addr=:50051"]
+      timeout: 3s
+      retries: 3
+      interval: 10s
+      start_period: 30s
+
+  grpcui:
+    image: fullstorydev/grpcui:latest
+    container_name: go_test_grpcui
+    ports:
+      - "8080:8080"
+    command: ["-plaintext", "goapp:50051"]
+    depends_on:
+      goapp:
+        condition: service_healthy
+    networks:
+      - backend
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  backend:
+    driver: bridge
