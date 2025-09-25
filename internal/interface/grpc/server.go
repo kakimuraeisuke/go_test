@@ -14,14 +14,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// server implements the gRPC service
+// server はgRPCサービスを実装します
 type server struct {
 	v1.UnimplementedGoTestServiceServer
 	noteUsecase usecase.NoteUsecase
 	pingUsecase usecase.PingUsecase
 }
 
-// NewServer creates a new gRPC server
+// NewServer は新しいgRPCサーバーを作成します
 func NewServer(noteUsecase usecase.NoteUsecase, pingUsecase usecase.PingUsecase) *grpc.Server {
 	s := &server{
 		noteUsecase: noteUsecase,
@@ -31,8 +31,8 @@ func NewServer(noteUsecase usecase.NoteUsecase, pingUsecase usecase.PingUsecase)
 	grpcServer := grpc.NewServer()
 	v1.RegisterGoTestServiceServer(grpcServer, s)
 	reflection.Register(grpcServer)
-
-	// Register health check service
+	
+	// ヘルスチェックサービスを登録
 	healthServer := health.NewServer()
 	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthServer)
@@ -40,7 +40,7 @@ func NewServer(noteUsecase usecase.NoteUsecase, pingUsecase usecase.PingUsecase)
 	return grpcServer
 }
 
-// Ping implements the Ping RPC method
+// Ping はPing RPCメソッドを実装します
 func (s *server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResponse, error) {
 	mysqlAvailable, redisAvailable, message, err := s.pingUsecase.Ping(ctx)
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 	}, nil
 }
 
-// CreateNote implements the CreateNote RPC method
+// CreateNote はCreateNote RPCメソッドを実装します
 func (s *server) CreateNote(ctx context.Context, req *v1.CreateNoteRequest) (*v1.CreateNoteResponse, error) {
 	if req.Title == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "title is required")
@@ -76,7 +76,7 @@ func (s *server) CreateNote(ctx context.Context, req *v1.CreateNoteRequest) (*v1
 	}, nil
 }
 
-// GetNote implements the GetNote RPC method
+// GetNote はGetNote RPCメソッドを実装します
 func (s *server) GetNote(ctx context.Context, req *v1.GetNoteRequest) (*v1.GetNoteResponse, error) {
 	if req.Id <= 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "id must be positive")

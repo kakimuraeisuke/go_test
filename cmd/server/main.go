@@ -21,10 +21,10 @@ import (
 )
 
 func main() {
-	// Load environment variables
+	// 環境変数を読み込み
 	loadEnv()
 
-	// Initialize MySQL connection
+	// MySQL接続を初期化
 	mysqlConfig := mysql.NewConfig()
 	db, err := mysql.Connect(mysqlConfig)
 	if err != nil {
@@ -32,29 +32,29 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize Redis connection
+	// Redis接続を初期化
 	redisConfig := redisInfra.NewConfig()
 	redisClient := redisInfra.Connect(redisConfig)
 	defer redisClient.Close()
 
-	// Test Redis connection
+	// Redis接続をテスト
 	ctx := context.Background()
 	if err := redisInfra.Ping(ctx, redisClient); err != nil {
 		log.Printf("Warning: Redis connection failed: %v", err)
 	}
 
-	// Initialize repositories and cache
+	// リポジトリとキャッシュを初期化
 	noteRepo := repository.NewMySQLRepository(db)
 	redisCache := cache.NewRedisCache(redisClient)
 
-	// Initialize use cases
+	// ユースケースを初期化
 	noteUsecase := usecase.NewNoteInteractor(noteRepo, redisCache)
 	pingUsecase := usecase.NewPingInteractor(&sqlPinger{db: db}, &redisPinger{client: redisClient})
 
-	// Initialize gRPC server
+	// gRPCサーバーを初期化
 	grpcServer := grpc.NewServer(noteUsecase, pingUsecase)
 
-	// Start gRPC server
+	// gRPCサーバーを開始
 	port := getEnv("GRPC_PORT", "50051")
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -63,34 +63,34 @@ func main() {
 
 	log.Printf("Starting gRPC server on port %s", port)
 
-	// Start server in a goroutine
+	// サーバーをgoroutineで開始
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("Failed to serve gRPC: %v", err)
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server
+	// 割り込みシグナルを待ってサーバーを正常にシャットダウン
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	log.Println("Shutting down server...")
 
-	// Graceful shutdown
+	// 正常なシャットダウン
 	grpcServer.GracefulStop()
 }
 
-// loadEnv loads environment variables from .env file if it exists
+// loadEnv は.envファイルが存在する場合に環境変数を読み込みます
 func loadEnv() {
-	// In a real application, you might want to use a library like godotenv
-	// For simplicity, we'll just check if .env exists and log a message
+	// 実際のアプリケーションでは、godotenvのようなライブラリを使用することを推奨します
+	// 簡略化のため、.envファイルの存在をチェックしてメッセージをログに記録します
 	if _, err := os.Stat(".env"); err == nil {
 		log.Println("Loading environment variables from .env file")
 	}
 }
 
-// getEnv gets an environment variable with a default value
+// getEnv はデフォルト値付きで環境変数を取得します
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -98,7 +98,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// sqlPinger implements usecase.SQLPinger interface
+// sqlPinger はusecase.SQLPingerインターフェースを実装します
 type sqlPinger struct {
 	db *sql.DB
 }
@@ -107,7 +107,7 @@ func (p *sqlPinger) Ping(ctx context.Context) error {
 	return p.db.PingContext(ctx)
 }
 
-// redisPinger implements usecase.RedisPinger interface
+// redisPinger はusecase.RedisPingerインターフェースを実装します
 type redisPinger struct {
 	client *redis.Client
 }

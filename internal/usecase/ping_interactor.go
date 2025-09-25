@@ -5,13 +5,13 @@ import (
 	"fmt"
 )
 
-// pingInteractor implements PingUsecase interface
+// pingInteractor はPingUsecaseインターフェースを実装します
 type pingInteractor struct {
 	sqlPinger   SQLPinger
 	redisPinger RedisPinger
 }
 
-// NewPingInteractor creates a new ping interactor
+// NewPingInteractor は新しいピングインタラクターを作成します
 func NewPingInteractor(sqlPinger SQLPinger, redisPinger RedisPinger) PingUsecase {
 	return &pingInteractor{
 		sqlPinger:   sqlPinger,
@@ -19,17 +19,17 @@ func NewPingInteractor(sqlPinger SQLPinger, redisPinger RedisPinger) PingUsecase
 	}
 }
 
-// Ping checks the availability of MySQL and Redis
+// Ping はMySQLとRedisの可用性をチェックします
 func (p *pingInteractor) Ping(ctx context.Context) (mysqlAvailable, redisAvailable bool, message string, err error) {
-	// Check MySQL availability
+	// MySQLの可用性をチェック
 	mysqlErr := p.sqlPinger.Ping(ctx)
 	mysqlAvailable = mysqlErr == nil
 
-	// Check Redis availability
+	// Redisの可用性をチェック
 	redisErr := p.redisPinger.Ping(ctx)
 	redisAvailable = redisErr == nil
 
-	// Build message
+	// メッセージを構築
 	if mysqlAvailable && redisAvailable {
 		message = "All services are available"
 	} else if mysqlAvailable {

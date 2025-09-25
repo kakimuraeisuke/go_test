@@ -9,7 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Config holds MySQL configuration
+// Config はMySQL設定を保持します
 type Config struct {
 	Host     string
 	Port     string
@@ -18,7 +18,7 @@ type Config struct {
 	Password string
 }
 
-// NewConfig creates a new MySQL config from environment variables
+// NewConfig は環境変数から新しいMySQL設定を作成します
 func NewConfig() *Config {
 	return &Config{
 		Host:     getEnv("MYSQL_HOST", "localhost"),
@@ -29,7 +29,7 @@ func NewConfig() *Config {
 	}
 }
 
-// Connect creates a new MySQL connection
+// Connect は新しいMySQL接続を作成します
 func Connect(config *Config) (*sql.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		config.User,
@@ -44,12 +44,12 @@ func Connect(config *Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
-	// Configure connection pool
+	// 接続プールを設定
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
-	// Test the connection
+	// 接続をテスト
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
@@ -57,7 +57,7 @@ func Connect(config *Config) (*sql.DB, error) {
 	return db, nil
 }
 
-// getEnv gets an environment variable with a default value
+// getEnv はデフォルト値付きで環境変数を取得します
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

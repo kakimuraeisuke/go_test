@@ -9,7 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Config holds Redis configuration
+// Config はRedis設定を保持します
 type Config struct {
 	Host     string
 	Port     string
@@ -17,7 +17,7 @@ type Config struct {
 	DB       int
 }
 
-// NewConfig creates a new Redis config from environment variables
+// NewConfig は環境変数から新しいRedis設定を作成します
 func NewConfig() *Config {
 	db, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
 	return &Config{
@@ -28,7 +28,7 @@ func NewConfig() *Config {
 	}
 }
 
-// Connect creates a new Redis connection
+// Connect は新しいRedis接続を作成します
 func Connect(config *Config) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.Host, config.Port),
@@ -39,7 +39,7 @@ func Connect(config *Config) *redis.Client {
 	return rdb
 }
 
-// Ping tests the Redis connection
+// Ping はRedis接続をテストします
 func Ping(ctx context.Context, client *redis.Client) error {
 	_, err := client.Ping(ctx).Result()
 	if err != nil {
@@ -48,7 +48,7 @@ func Ping(ctx context.Context, client *redis.Client) error {
 	return nil
 }
 
-// getEnv gets an environment variable with a default value
+// getEnv はデフォルト値付きで環境変数を取得します
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

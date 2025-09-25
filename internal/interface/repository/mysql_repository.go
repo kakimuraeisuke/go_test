@@ -8,17 +8,17 @@ import (
 	"go_test/internal/usecase"
 )
 
-// mysqlRepository implements NoteRepository interface
+// mysqlRepository はNoteRepositoryインターフェースを実装します
 type mysqlRepository struct {
 	db *sql.DB
 }
 
-// NewMySQLRepository creates a new MySQL repository
+// NewMySQLRepository は新しいMySQLリポジトリを作成します
 func NewMySQLRepository(db *sql.DB) usecase.NoteRepository {
 	return &mysqlRepository{db: db}
 }
 
-// Create creates a new note in the database
+// Create はデータベースに新しいノートを作成します
 func (r *mysqlRepository) Create(ctx context.Context, note *domain.Note) (*domain.Note, error) {
 	query := `INSERT INTO notes (title, content) VALUES (?, ?)`
 	result, err := r.db.ExecContext(ctx, query, note.Title, note.Content)
@@ -35,7 +35,7 @@ func (r *mysqlRepository) Create(ctx context.Context, note *domain.Note) (*domai
 	return note, nil
 }
 
-// GetByID retrieves a note by ID from the database
+// GetByID はデータベースからIDでノートを取得します
 func (r *mysqlRepository) GetByID(ctx context.Context, id int64) (*domain.Note, error) {
 	query := `SELECT id, title, content, created_at FROM notes WHERE id = ?`
 	row := r.db.QueryRowContext(ctx, query, id)
